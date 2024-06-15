@@ -20,16 +20,10 @@ def main(file_path, head, save_path):
     # load the data from csv file
     data = pd.read_csv(file_path)
     total_num = data.shape[0]
-    # normalize the data into the range [0, 100]
-    # data[head] = (data[head] - data[head].min()) / (data[head].max() - data[head].min()) * 100
     # get the descriptive statistics of the data
     average_score, std_score, Q1, Q3, IQR = get_stats(data, head)
     # remove the outliers ('std' or 'quantile')
     lower_bound, upper_bound = cal_bound(average_score, std_score, Q1, Q3, IQR, mode='std')
-    # lower_bound = data[head].min() if lower_bound < data[head].min() else lower_bound
-    # upper_bound = data[head].max() if upper_bound > data[head].max() else upper_bound
-    # lower_bound = 0 if lower_bound < 0 else lower_bound
-    # upper_bound = 100 if upper_bound > 100 else upper_bound
     upper_outlier, lower_outlier = data[data[head] > upper_bound], data[data[head] < lower_bound]
     data = data[(data[head] >= lower_bound) & (data[head] <= upper_bound)]
     print(f'> # Upper outliers: {upper_outlier.shape[0]}, ' +
@@ -64,7 +58,6 @@ def main(file_path, head, save_path):
     # the expected frequency of each interval
     predinfed_ratio = [0.05, 0.15, 0.6, 0.15, 0.05]
     expected_frequency = {f'level {i+1}': total_num * predinfed_ratio[i] for i in range(5)}
-    # print(pd.DataFrame(expected_frequency.items(), columns=['Levels', 'Expected Frequency']))
     # perform the chi-square test between the interval_count and the expected_frequency
     print('> Perform the chi-square test...')
     result, val = chi_square_test(interval_count, expected_frequency, alpha=0.05)
